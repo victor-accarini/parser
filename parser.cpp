@@ -28,9 +28,9 @@ void parser()
 		{
 			fprintf(trace,"Error: Sentence must start with #\nTerminating program...\n");
 			exit(1);
-		}
-		E();
-		if(!MATCH(CHARACTER,"#"))
+		}*/
+		EL();
+		/*if (!MATCH(CHARACTER,"#"))
 		{
 			fprintf(trace,"Error: Sentence must end with #\nTerminating program...\n");
 			exit(1);
@@ -247,6 +247,7 @@ int MATCH(tpType tok)
 	if (CTok.token == tok)
 	{
 		getToken(&CTok);
+		fprintf(trace,"%s",CTok.token_name);
 	}
 	else
 	{

@@ -1,0 +1,22 @@
+# Executables
+*.out
+*.hex
+
+# Precompiled Headers
+*.ghc
+*.phc
+
+# Temporary files
+*~
+*.swp
+
+# Compiled Files
+*.pyc
+*out
+parser
+
+# Log Files
+*.log
+
+# Homework files
+*.doc

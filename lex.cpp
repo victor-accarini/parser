@@ -239,9 +239,13 @@ int isSpace(char ch)
 char getaChar()
 {
 	lineptr++;
-	if (*lineptr == '\n')
+	if (*lineptr == '\n' && feof(sourcefile) == 0)
 	{
 		getaLine();
+	}
+	else if (feof(sourcefile) != 0)
+	{
+		return EOF;
 	}
 	return *lineptr;
 }

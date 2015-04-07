@@ -18,21 +18,4 @@ function multiplication (num1: integer; num2: integer): integer;
 	result := num1 * num2
 	end;
 begin
-	num1 := 2;
-	num2 := 10;
-	result := 0;
-	result = sum(num1, num2);
-	if result > 20 then
-		result = subtraction(num2, num1)
-	else
-		begin
-		num1 := 3;
-		num2 := 4;
-		result = multiplication(num1, num2)
-		end;
-	while (multiplication(num1, num2) <> 100) do
-		begin
-		num1 := num1 + 1;
-		num2 := num2 + 1
-		end
 end.

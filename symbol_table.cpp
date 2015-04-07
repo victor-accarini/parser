@@ -37,6 +37,15 @@ int insertAt(tpType token, char* name, char* type, int value)
 	return i;
 }
 
+void changeType(int n, enum tpType type)
+{
+	char str[50];
+	ToAscii(type, str, n);
+	SymbolTable[n].token = type;
+	strcpy(SymbolTable[n].token_type,str);
+
+}
+
 void report()
 {
 	int i = 0;
@@ -129,3 +138,157 @@ void init()
 
 	return;
 }
+
+void ToAscii(enum tpType tok, char* expected, int n)
+{
+	char name[70];
+	switch (tok)
+	{
+		case INVALID:
+			break;
+		case keywd_program:
+			strcpy(expected,"program");
+			break;
+		case id:
+			sprintf(name,"id->%s",SymbolTable[n].token_name);
+			strcpy(expected,name);
+			break;
+		case func_id:
+			sprintf(name,"function id->%s",SymbolTable[n].token_name);
+			strcpy(expected,"function id");
+			break;
+		case proc_id:
+			sprintf(name,"procedure id->%s",SymbolTable[n].token_name);
+			strcpy(expected,"procedure id");
+			break;
+		case array_id:
+			sprintf(name,"array id->%s",SymbolTable[n].token_name);
+			strcpy(expected,"array id");
+			break;
+		case keywd_var:
+			strcpy(expected,"var");
+			break;
+		case keywd_of:
+			strcpy(expected,"of");
+			break;
+		case keywd_array:
+			strcpy(expected,"array");
+			break;
+		case num:
+			sprintf(name,"number->%s",SymbolTable[n].token_name);
+			strcpy(expected,"a number");
+			break;
+		case keywd_int:
+			strcpy(expected,"int");
+			break;
+		case keywd_real:
+			strcpy(expected,"real");
+			break;
+		case keywd_bool:
+			strcpy(expected,"bool");
+			break;
+		case keywd_func:
+			strcpy(expected,"function");
+			break;
+		case keywd_proc:
+			strcpy(expected,"procedure");
+			break;
+		case keywd_begin:
+			strcpy(expected,"begin");
+			break;
+		case keywd_end:
+			strcpy(expected,"end");
+			break;
+		case keywd_if:
+			strcpy(expected,"if");
+			break;
+		case keywd_then:
+			strcpy(expected,"then");
+			break;
+		case keywd_else:
+			strcpy(expected,"else");
+			break;
+		case keywd_while:
+			strcpy(expected,"while");
+			break;
+		case keywd_do:
+			strcpy(expected,"do");
+			break;
+		case keywd_not:
+			strcpy(expected,"not");
+			break;
+		case character:
+			strcpy(expected,"character");
+			break;
+		case MyEOF:
+			strcpy(expected,"End of file");
+			break;
+		case l_paren:
+			strcpy(expected,"(");
+			break;
+		case r_paren:
+			strcpy(expected,")");
+			break;
+		case semi_colon:
+			strcpy(expected,";");
+			break;
+		case comma:
+			strcpy(expected,",");
+			break;
+		case colon:
+			strcpy(expected,":");
+			break;
+		case left_bkt:
+			strcpy(expected,"{");
+			break;
+		case right_bkt:
+			strcpy(expected,"}");
+			break;
+		case dotdot:
+			strcpy(expected,"..");
+			break;
+		case assign_op:
+			strcpy(expected,":=");
+			break;
+		case relop_eq:
+			strcpy(expected,"==");
+			break;
+		case relop_gt:
+			strcpy(expected,">");
+			break;
+		case relop_lt:
+			strcpy(expected,"<");
+			break;
+		case relop_ne:
+			strcpy(expected,"<>");
+			break;
+		case relop_ge:
+			strcpy(expected,">=");
+			break;
+		case relop_le:
+			strcpy(expected,"<=");
+			break;
+		case plus_op:
+			strcpy(expected,"+");
+			break;
+		case sub_op:
+			strcpy(expected,"-");
+			break;
+		case mult_op:
+			strcpy(expected,"*");
+			break;
+		case div_op:
+			strcpy(expected,"/");
+			break;
+		case mod_op:
+			strcpy(expected,"mod");
+			break;
+		case addop:
+			strcpy(expected,"+ or -");
+			break;
+		case multop:
+			strcpy(expected,"* or / or mod");
+			break;
+	} 
+}
+

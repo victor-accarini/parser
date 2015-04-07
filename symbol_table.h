@@ -13,7 +13,7 @@ enum tpType {INVALID, keywd_program, id, func_id, proc_id, array_id, keywd_var, 
 	plus_op, sub_op, mult_op, div_op, mod_op, addop, multop};
 
 struct {
-	tpType token;
+	enum tpType token;
 	char token_name[200];
 	char token_type[50];
 	int token_value;
@@ -26,5 +26,7 @@ int insert(tpToken token);
 void report();
 void remove();
 void init();
+void ToAscii(enum tpType tok, char* expected, int n);
+void changeType(int n, enum tpType type);
 
 #endif

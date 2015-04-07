@@ -44,16 +44,30 @@ int getToken(tpToken *token)
 		name[bptr] = '\0'; //Close string
 		value = atoi(name);
 	}
-	else if (ch == '+' || ch == '-')
+	else if (ch == '+')
 	{
-		CT = addop;
+		CT = plus_op;
 		name[bptr++] = ch;
 		name[bptr] = '\0';
 		ch = getaChar();
 	}
-	else if (ch == '*' || ch == '/')
+	else if (ch == '-')
 	{
-		CT = multop;
+		CT = sub_op;
+		name[bptr++] = ch;
+		name[bptr] = '\0';
+		ch = getaChar();
+	}
+	else if (ch == '*')
+	{
+		CT = mult_op;
+		name[bptr++] = ch;
+		name[bptr] = '\0';
+		ch = getaChar();
+	}
+	else if (ch == '/')
+	{
+		CT = div_op;
 		name[bptr++] = ch;
 		name[bptr] = '\0';
 		ch = getaChar();
@@ -116,6 +130,7 @@ int getToken(tpToken *token)
 	}
 	else if (ch == '.')
 	{
+		CT = MyEOF;
 		name[bptr++] = ch;
 		name[bptr] = '\0';
 		ch = getaChar();
@@ -184,7 +199,7 @@ int getToken(tpToken *token)
 	// leave variable type and value to the parser
 	token->token = CT;
 	strcpy(token->token_name,name);
-	strcpy(token->token_type,"");
+	strcpy(token->token_type,name);
 	token->token_value = value;
 
 	if (CT != MyEOF && CT != character)
@@ -198,6 +213,10 @@ int getToken(tpToken *token)
 		else
 		{
 			fprintf(tracelex,"Token %s is already in the SymbolTable.\n", token->token_name);
+			token->token = SymbolTable[n].token;
+			strcpy(token->token_name, SymbolTable[n].token_name);
+			strcpy(token->token_type, SymbolTable[n].token_type);
+			token->token_value = SymbolTable[n].token_value;
 		}
 	}
 
@@ -239,11 +258,11 @@ int isSpace(char ch)
 char getaChar()
 {
 	lineptr++;
-	if (*lineptr == '\n' && feof(sourcefile) == 0)
+	if (*lineptr == '\0' && feof(sourcefile) == 0)
 	{
 		getaLine();
 	}
-	else if (feof(sourcefile) != 0)
+	if (feof(sourcefile) != 0)
 	{
 		return EOF;
 	}

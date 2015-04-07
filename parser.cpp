@@ -4,6 +4,26 @@ FILE *trace = NULL;
 FILE *tracelex = NULL;
 tpToken CTok;
 int tabcounter, n;
+int idL_list[20], paramL_list[20];
+int idLCounter = 0, paramLCounter = 0;
+
+void clearIdL_list()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		idL_list[i] = -1;
+	}
+	idLCounter = 0;
+}
+
+void clearParamL_list()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		paramL_list[i] = -1;
+	}
+	paramLCounter = 0;
+}
 
 void parser()
 {
@@ -18,23 +38,15 @@ void parser()
 	if (trace == NULL){
 		printf("Error: Lex trace log file missing.");
 	}
+
+	clearIdL_list();
+	clearParamL_list();
+
 	fprintf(trace,"Starting the parser.\n");
 	n = getToken(&CTok);
 	while(CTok.token != MyEOF)
 	{
-		fprintf(trace, "%s\n", SymbolTable[n].token_type);
-		n = getToken(&CTok);
-		/*if(!MATCH(CHARACTER,"#"))
-		{
-			fprintf(trace,"Error: Sentence must start with #\nTerminating program...\n");
-			exit(1);
-		}*/
-		EL();
-		/*if (!MATCH(CHARACTER,"#"))
-		{
-			fprintf(trace,"Error: Sentence must end with #\nTerminating program...\n");
-			exit(1);
-		}*/
+		P();
 	}
 	
 	fprintf(trace,"Closing the parser.\n");
@@ -44,56 +56,299 @@ void parser()
 
 void P()
 {
+	ENTER("P");
+	MATCH(keywd_program);
+	MATCH(id);
+	MATCH(l_paren);
+	idL();
+	MATCH(r_paren);
+	MATCH(semi_colon);
+	decls();
+	subdecls();
+	cmpdS();
+	EXIT("P");
 }
 
 void idL()	
 {
-}
-
-void idL_()
-{
+	ENTER("idL");
+	idL_list[idLCounter++] = n;
+	MATCH(id);
+	while (CTok.token == comma)
+	{
+		MATCH(comma);
+		idL_list[idLCounter++] = n;
+		MATCH(id);
+	}
+	EXIT("idL");
 }
 
 void decls()
 {
+	ENTER("decls");
+	while (CTok.token == keywd_var)
+	{
+		MATCH(keywd_var);
+		idL();
+		MATCH(colon);
+		type();
+		MATCH(semi_colon);
+	}
+	EXIT("decls");
 }
 
-void decls_(){}
-void type(){}
-void Stype(){}
-void subdecls(){}
-void subdecls_(){}
-void subdecl(){}
-void subhead(){}
-void args(){}
-void paramL(){}
-void paramL_(){}
-void cmpdS(){}
-void optS(){}
-void SL(){}
-void SL_(){}
-void S(){}
-void V(){}
-void procS(){}
+void type()
+{
+	ENTER("type");
+	if (CTok.token == keywd_array)
+	{
+		if (idLCounter > 0)
+		{
+			for (; idLCounter > 0; idLCounter--)
+			{
+				changeType(idL_list[idLCounter],array_id);
+			}
+		}
+		else if (paramLCounter > 0)
+		{
+			for (; paramLCounter > 0; paramLCounter--)
+			{
+				changeType(paramL_list[paramLCounter],array_id);
+			}
+		}
+		MATCH(keywd_array);
+		MATCH(left_bkt);
+		MATCH(num);
+		MATCH(dotdot);
+		MATCH(num);
+		MATCH(right_bkt);
+		MATCH(keywd_of);
+	}
+	Stype();
+	EXIT("type");
+}
+
+void Stype()
+{
+	ENTER("Stype");
+	if (CTok.token == keywd_int)
+	{
+		MATCH(keywd_int);
+	}
+	else if (CTok.token == keywd_real)
+	{
+		MATCH(keywd_real);
+	}
+	else
+	{
+		MATCH(keywd_bool);
+	}
+	EXIT("Stype");
+}
+
+void subdecls()
+{
+	ENTER("subdecls");
+	while (CTok.token == keywd_func || CTok.token == keywd_proc)
+	{
+		subdecl();
+		MATCH(semi_colon);
+	}
+	EXIT("subdecls");
+}
+
+void subdecl()
+{
+	ENTER("subdecl");
+	subhead();
+	decls();
+	cmpdS();
+	EXIT("subdecl");
+}
+
+void subhead()
+{
+	ENTER("subhead");
+	if (CTok.token == keywd_func)
+	{
+		MATCH(keywd_func);
+		if (CTok.token == id)
+		{
+			// Change token type
+			changeType(n,func_id);
+			// Change CT
+			CTok.token = func_id;
+		}
+		MATCH(func_id);
+		args();
+		MATCH(colon);
+		Stype();
+		MATCH(semi_colon);
+	}
+	else
+	{
+		MATCH(keywd_proc);
+		if (CTok.token == id)
+		{
+			// Change token type
+			changeType(n,proc_id);
+			// Change CT
+			CTok.token = proc_id;
+		}
+		MATCH(proc_id);
+		args();
+		MATCH(semi_colon);
+	}
+	EXIT("subhead");
+}
+
+void args()
+{
+	ENTER("args");
+	if (CTok.token == l_paren)
+	{
+		MATCH(l_paren);
+		paramL();
+		MATCH(r_paren);
+	}
+	EXIT("args");
+}
+
+void paramL()
+{
+	ENTER("paramL");
+	idL();
+	MATCH(colon);
+	type();
+	while (CTok.token == semi_colon)
+	{
+		MATCH(semi_colon);
+		idL();
+		MATCH(colon);
+		type();
+	}
+	EXIT("paramL");
+}
+
+void cmpdS()
+{
+	ENTER("cmpdS");
+	MATCH(keywd_begin);
+	optS();
+	MATCH(keywd_end);
+	EXIT("cmpdS");
+}
+
+void optS()
+{
+	ENTER("optS");
+	if (CTok.token == id || CTok.token == array_id ||CTok.token == func_id ||CTok.token == proc_id ||
+			CTok.token == keywd_begin || CTok.token == keywd_if || CTok.token == keywd_while)
+	{
+		SL();
+	}
+	EXIT("optS");
+}
+
+void SL()
+{
+	ENTER("SL");
+	S();
+	while (CTok.token == semi_colon)
+	{
+		MATCH(semi_colon);
+		S();
+	}
+	EXIT("SL");
+}
+
+void S()
+{
+	ENTER("S");
+	if (CTok.token == keywd_begin)
+	{
+		cmpdS();
+	}
+	else if (CTok.token == proc_id)
+	{
+		procS();
+	}
+	else if (CTok.token == keywd_if)
+	{
+		MATCH(keywd_if);
+		E();
+		MATCH(keywd_then);
+		S();
+		MATCH(keywd_else);
+		S();
+	}
+	else if (CTok.token == keywd_while)
+	{
+		MATCH(keywd_while);
+		E();
+		MATCH(keywd_do);
+		S();
+	}
+	else
+	{
+		V();
+		MATCH(assign_op);
+		E();
+	}
+	EXIT("S");
+}
+
+void V()
+{
+	ENTER("V");
+	if (CTok.token == id)
+	{
+		MATCH(id);
+	}
+	else if (CTok.token == array_id)
+	{
+		MATCH(array_id);
+		MATCH(left_bkt);
+		SE();
+		MATCH(right_bkt);
+	}
+	else
+	{
+		MATCH(func_id);
+	}
+	EXIT("V");
+}
+
+void procS()
+{
+	ENTER("procS");
+	if (CTok.token == id)
+	{
+		// Change token type
+		changeType(n,proc_id);
+		// Change CT
+		CTok.token = proc_id;
+	}
+	MATCH(proc_id);
+	if (CTok.token == l_paren)
+	{
+		MATCH(l_paren);
+		EL();
+		MATCH(r_paren);
+	}
+	EXIT("procS");
+}
 
 void EL()
 {
 	ENTER("EL");
 	E();
-	EL_();
-	EXIT("EL");
-}
-
-void EL_()
-{
-	ENTER("EL\'");
-	if (CTok.token == comma)
-	{
+	while (CTok.token == comma)
+	{	
 		MATCH(comma);
 		E();
-		EL_();
 	}
-	EXIT("EL\'");
+	EXIT("EL");
 }
 
 void E()
@@ -145,58 +400,42 @@ void SE()
 		MATCH(sub_op);
 	}
 	T();
-	SE_();
+	while (CTok.token == plus_op || CTok.token == sub_op || CTok.token == mod_op)
+	{
+		if (CTok.token == plus_op)
+		{
+			MATCH(plus_op);
+		}
+		else if (CTok.token == sub_op)
+		{
+			MATCH(sub_op);
+		}
+		else if (CTok.token == mod_op)
+		{
+			MATCH(mod_op);
+		}
+		T();
+	}
 	EXIT("SE");
-}
-
-void SE_()
-{
-	ENTER("SE\'");
-	if (CTok.token == plus_op)
-	{
-		MATCH(plus_op);
-		T();
-		SE_();
-	}
-	else if (CTok.token == sub_op)
-	{
-		MATCH(sub_op);
-		T();
-		SE_();
-	}
-	else if (CTok.token == mod_op)
-	{
-		MATCH(mod_op);
-		T();
-		SE_();
-	}
-	EXIT("SE\'");
 }
 
 void T()
 {
 	ENTER("T");
 	F();
-	T_();
-	EXIT("T");
-}
-
-void T_()
-{
-	ENTER("T\'");
-	if (CTok.token == mult_op)
+	while(CTok.token == mult_op || CTok.token == div_op)
 	{
-		MATCH(mult_op);
+		if (CTok.token == mult_op)
+		{
+			MATCH(mult_op);
+		}	
+		else if (CTok.token == div_op)
+		{
+			MATCH(mult_op);
+		}
 		F();
-		T_();
-	}	
-	else if (CTok.token == div_op)
-	{
-		MATCH(mult_op);
-		F();
-		T_();
 	}
-	EXIT("T\'");
+	EXIT("T");
 }
 
 void F()
@@ -228,30 +467,33 @@ void F()
 		MATCH(keywd_not);
 		F();
 	}
-	else if (CTok.token == array_id)
+	else //(CTok.token == array_id)
 	{
 		MATCH(array_id);
 		MATCH(left_bkt);
 		SE();
 		MATCH(right_bkt);
 	}
-	else
-	{
-		//Error;
-	}
 	EXIT("F");
 }
 
-int MATCH(tpType tok)
+
+void MATCH(enum tpType tok)
 {
-	if (CTok.token == tok)
+	char expected[50];
+	char received[50];
+	if (SymbolTable[n].token == tok)
 	{
-		getToken(&CTok);
-		fprintf(trace,"%s",CTok.token_name);
+		ToAscii(tok, received, n);
+		fprintf(trace,"%s\n",received);
+		n = getToken(&CTok);
 	}
 	else
 	{
-		//Error
+		ToAscii(tok, expected, -1);
+		ToAscii(SymbolTable[n].token, received, n);
+		fprintf(trace,"Error: Expected token %s, received %s\n",expected,received);
+		exit(-1);
 	}
 }
 

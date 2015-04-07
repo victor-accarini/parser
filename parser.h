@@ -35,7 +35,7 @@ void T();
 void T_();
 void F();
 
-int MATCH(tpType tok);
+void MATCH(tpType tok);
 void ENTER(char *str);
 void EXIT(char *str);
 

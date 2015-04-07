@@ -202,6 +202,11 @@ int getToken(tpToken *token)
 	strcpy(token->token_type,name);
 	token->token_value = value;
 
+	if (CT == INVALID)
+	{
+		fprintf(tracelex, "Invalid token entered: %s",token->token_name);
+		exit(-1);
+	}
 	if (CT != MyEOF && CT != character)
 	{
 		fprintf(tracelex,"Token %s found!\n",token->token_name);

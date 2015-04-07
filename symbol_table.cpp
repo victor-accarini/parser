@@ -145,6 +145,8 @@ void ToAscii(enum tpType tok, char* expected, int n)
 	switch (tok)
 	{
 		case INVALID:
+			sprintf(name,"INVALID->%s",SymbolTable[n].token_name);
+			strcpy(expected,name);
 			break;
 		case keywd_program:
 			strcpy(expected,"program");
@@ -155,15 +157,15 @@ void ToAscii(enum tpType tok, char* expected, int n)
 			break;
 		case func_id:
 			sprintf(name,"function id->%s",SymbolTable[n].token_name);
-			strcpy(expected,"function id");
+			strcpy(expected,name);
 			break;
 		case proc_id:
 			sprintf(name,"procedure id->%s",SymbolTable[n].token_name);
-			strcpy(expected,"procedure id");
+			strcpy(expected,name);
 			break;
 		case array_id:
 			sprintf(name,"array id->%s",SymbolTable[n].token_name);
-			strcpy(expected,"array id");
+			strcpy(expected,name);
 			break;
 		case keywd_var:
 			strcpy(expected,"var");
@@ -176,7 +178,7 @@ void ToAscii(enum tpType tok, char* expected, int n)
 			break;
 		case num:
 			sprintf(name,"number->%s",SymbolTable[n].token_name);
-			strcpy(expected,"a number");
+			strcpy(expected,name);
 			break;
 		case keywd_int:
 			strcpy(expected,"int");

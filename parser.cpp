@@ -5,7 +5,8 @@ FILE *tracelex = NULL;
 tpToken CTok;
 int tabcounter, n;
 int idL_list[20];
-int idLCounter = 0;
+int idLCounter = 0, varCounter = 0;
+int varfuncCounter = 0, varfuncNumber;
 
 void clearIdL_list()
 {
@@ -81,6 +82,7 @@ void decls()
 		clearIdL_list();
 		MATCH(keywd_var);
 		idL();
+		varCounter = idLCounter;
 		MATCH(colon);
 		type();
 		MATCH(semi_colon);
@@ -97,7 +99,7 @@ void type()
 		{
 			for (; idLCounter > 0;)
 			{
-				changeType(idL_list[--idLCounter],array_id);
+				changeToken(idL_list[--idLCounter],array_id);
 			}
 		}
 		MATCH(keywd_array);
@@ -116,18 +118,44 @@ void type()
 void Stype()
 {
 	ENTER("Stype");
+	int i;
 	if (CTok.token == keywd_int)
 	{
+		for(i = 0; i < varCounter; i++)
+		{
+			changeType(idL_list[i],"integer");
+		}
+		if (varfuncCounter == 1)
+		{
+			changeType(varfuncNumber,"integer");
+		}
 		MATCH(keywd_int);
 	}
 	else if (CTok.token == keywd_real)
 	{
+		for(i = 0; i < varCounter; i++)
+		{
+			changeType(idL_list[i],"real");
+		}
+		if (varfuncCounter == 1)
+		{
+			changeType(varfuncNumber,"real");
+		}
 		MATCH(keywd_real);
 	}
 	else
 	{
+		for(i = 0; i < varCounter; i++)
+		{
+			changeType(idL_list[i],"boolean");
+		}
+		if (varfuncCounter == 1)
+		{
+			changeType(varfuncNumber,"boolean");
+		}
 		MATCH(keywd_bool);
 	}
+	varCounter = 0;
 	EXIT("Stype");
 }
 
@@ -159,15 +187,18 @@ void subhead()
 		MATCH(keywd_func);
 		if (CTok.token == id)
 		{
-			// Change token type
-			changeType(n,func_id);
+			// Change token
+			changeToken(n,func_id);
 			// Change CT
 			CTok.token = func_id;
 		}
+		varfuncCounter = 1;
+		varfuncNumber = n;
 		MATCH(func_id);
 		args();
 		MATCH(colon);
 		Stype();
+		varfuncNumber = 0;
 		MATCH(semi_colon);
 	}
 	else
@@ -176,7 +207,7 @@ void subhead()
 		if (CTok.token == id)
 		{
 			// Change token type
-			changeType(n,proc_id);
+			changeToken(n,proc_id);
 			// Change CT
 			CTok.token = proc_id;
 		}
@@ -310,7 +341,7 @@ void procS()
 	if (CTok.token == id)
 	{
 		// Change token type
-		changeType(n,proc_id);
+		changeToken(n,proc_id);
 		// Change CT
 		CTok.token = proc_id;
 	}

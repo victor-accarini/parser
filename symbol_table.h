@@ -27,6 +27,7 @@ void report();
 void remove();
 void init();
 void ToAscii(enum tpType tok, char* expected, int n);
-void changeType(int n, enum tpType type);
+void changeType(int n, char *type);
+void changeToken(int n, enum tpType type);
 
 #endif

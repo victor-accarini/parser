@@ -4,8 +4,8 @@ FILE *trace = NULL;
 FILE *tracelex = NULL;
 tpToken CTok;
 int tabcounter, n;
-int idL_list[20], paramL_list[20];
-int idLCounter = 0, paramLCounter = 0;
+int idL_list[20];
+int idLCounter = 0;
 
 void clearIdL_list()
 {
@@ -14,15 +14,6 @@ void clearIdL_list()
 		idL_list[i] = -1;
 	}
 	idLCounter = 0;
-}
-
-void clearParamL_list()
-{
-	for (int i = 0; i < 20; i++)
-	{
-		paramL_list[i] = -1;
-	}
-	paramLCounter = 0;
 }
 
 void parser()
@@ -40,7 +31,6 @@ void parser()
 	}
 
 	clearIdL_list();
-	clearParamL_list();
 
 	fprintf(trace,"Starting the parser.\n");
 	n = getToken(&CTok);
@@ -88,6 +78,7 @@ void decls()
 	ENTER("decls");
 	while (CTok.token == keywd_var)
 	{
+		clearIdL_list();
 		MATCH(keywd_var);
 		idL();
 		MATCH(colon);
@@ -104,16 +95,9 @@ void type()
 	{
 		if (idLCounter > 0)
 		{
-			for (; idLCounter > 0; idLCounter--)
+			for (; idLCounter > 0;)
 			{
-				changeType(idL_list[idLCounter],array_id);
-			}
-		}
-		else if (paramLCounter > 0)
-		{
-			for (; paramLCounter > 0; paramLCounter--)
-			{
-				changeType(paramL_list[paramLCounter],array_id);
+				changeType(idL_list[--idLCounter],array_id);
 			}
 		}
 		MATCH(keywd_array);
@@ -124,6 +108,7 @@ void type()
 		MATCH(right_bkt);
 		MATCH(keywd_of);
 	}
+	idLCounter = 0;
 	Stype();
 	EXIT("type");
 }
@@ -215,7 +200,7 @@ void args()
 }
 
 void paramL()
-{
+{	
 	ENTER("paramL");
 	idL();
 	MATCH(colon);

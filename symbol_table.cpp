@@ -57,17 +57,13 @@ void report()
 		printf("Error: could not dump the Symbol Table.");
 	}
 
-	fprintf(report," token \t \t name \t \t type \t \t value\n");
+	fprintf(report," %30stoken %31sname %31stype %5svalue\n","","","","");
+	fprintf(report,"-----------------------------------------------------------------------------------------------------------------------\n");
+	char str[50];
 	while (SymbolTable[i].token != INVALID)
 	{
-		if (SymbolTable[i].token == num)
-		{
-			fprintf(report," NUM \t \t %s \t \t \t %s \t \t %d\n", SymbolTable[i].token_name,SymbolTable[i].token_type,SymbolTable[i].token_value);
-		}
-		else
-		{
-			fprintf(report," ID \t \t %s \t \t \t %s \t \t %d\n", SymbolTable[i].token_name,SymbolTable[i].token_type,SymbolTable[i].token_value);
-		}
+		ToAscii(SymbolTable[i].token,str,i);
+		fprintf(report," %35s %35s %35s %10d\n", str, SymbolTable[i].token_name,SymbolTable[i].token_type,SymbolTable[i].token_value);
 		i++;
 	}
 	return;

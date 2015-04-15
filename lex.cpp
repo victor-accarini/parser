@@ -8,12 +8,13 @@ int getToken(tpToken *token)
 	int bptr; // Holds the next position in the buffer
 	int n = -1;
 	char name[255]; // Buffer for the token
-
+	char toktype[10];
 	// Start the variables
 	value = 0;
 	bptr = 0;
 	CT = INVALID;
 	strcpy(name, "");
+	strcpy(toktype, "");
 
 	while (isSpace(ch)) // Get rid of white spaces, tabulations, etc..
 	{
@@ -43,6 +44,7 @@ int getToken(tpToken *token)
 		}
 		name[bptr] = '\0'; //Close string
 		value = atoi(name);
+		strcpy(toktype,"integer");
 	}
 	else if (ch == '+')
 	{
@@ -199,7 +201,7 @@ int getToken(tpToken *token)
 	// leave variable type and value to the parser
 	token->token = CT;
 	strcpy(token->token_name,name);
-	strcpy(token->token_type,name);
+	strcpy(token->token_type,toktype);
 	token->token_value = value;
 
 	if (CT == INVALID)

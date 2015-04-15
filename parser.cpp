@@ -7,6 +7,7 @@ int tabcounter, n;
 int idL_list[20];
 int idLCounter = 0, varCounter = 0;
 int varfuncCounter = 0, varfuncNumber;
+char idtype[10];
 
 void clearIdL_list()
 {
@@ -21,6 +22,7 @@ void parser()
 {
 	CTok.token = INVALID;
 	tabcounter = 0;
+	strcpy(idtype, "");
 	//Start the log
 	trace = fopen("trace.log","w+");
 	if (trace == NULL){
@@ -307,6 +309,7 @@ void S()
 	}
 	else
 	{
+		strcpy(idtype, SymbolTable[n].token_type);
 		V();
 		MATCH(assign_op);
 		E();
@@ -459,10 +462,18 @@ void F()
 	ENTER("F");
 	if (CTok.token == id)
 	{
+		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
+		{
+			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+		}
 		MATCH(id);
 	}
 	else if (CTok.token == func_id)
 	{
+		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
+		{
+			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+		}
 		MATCH(func_id);
 		MATCH(l_paren);
 		EL();
@@ -470,6 +481,10 @@ void F()
 	}
 	else if (CTok.token == num)
 	{
+		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
+		{
+			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+		}
 		MATCH(num);
 	}
 	else if (CTok.token == l_paren)
@@ -485,6 +500,10 @@ void F()
 	}
 	else //(CTok.token == array_id)
 	{
+		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
+		{
+			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+		}
 		MATCH(array_id);
 		MATCH(left_bkt);
 		SE();

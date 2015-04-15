@@ -17,6 +17,7 @@ struct {
 	char token_name[200];
 	char token_type[50];
 	int token_value;
+	char funcargs[500];
 } typedef tpToken;
 
 extern tpToken SymbolTable[Tsize];

@@ -8,6 +8,7 @@ int idL_list[20];
 int idLCounter = 0, varCounter = 0;
 int varfuncCounter = 0, varfuncNumber;
 char idtype[10];
+char arglisttype[500];
 
 void clearIdL_list()
 {
@@ -183,6 +184,7 @@ void subdecl()
 
 void subhead()
 {
+	int aux = -1;
 	ENTER("subhead");
 	if (CTok.token == keywd_func)
 	{
@@ -196,8 +198,11 @@ void subhead()
 		}
 		varfuncCounter = 1;
 		varfuncNumber = n;
+		aux = n;
 		MATCH(func_id);
 		args();
+		// Assign the arguments to the function
+		strcpy(SymbolTable[aux].funcargs, arglisttype);
 		MATCH(colon);
 		Stype();
 		varfuncNumber = 0;
@@ -213,8 +218,11 @@ void subhead()
 			// Change CT
 			CTok.token = proc_id;
 		}
+		aux = n;
 		MATCH(proc_id);
 		args();
+		// Assign the arguments to the function
+		strcpy(SymbolTable[aux].funcargs, arglisttype);
 		MATCH(semi_colon);
 	}
 	EXIT("subhead");
@@ -223,6 +231,8 @@ void subhead()
 void args()
 {
 	ENTER("args");
+	// Clear arguments type list
+	strcpy(arglisttype,"");
 	if (CTok.token == l_paren)
 	{
 		MATCH(l_paren);

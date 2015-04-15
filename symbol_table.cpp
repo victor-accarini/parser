@@ -95,6 +95,7 @@ void init()
 		SymbolTable[i].token = INVALID;
 		strcpy(SymbolTable[i].token_type,"");
 		SymbolTable[i].token_value = 0;
+		strcpy(SymbolTable[i].funcargs, "");
 	}
 
 	// Initialize the reserved words

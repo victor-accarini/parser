@@ -40,6 +40,7 @@ begin
 	while (multiplication(num1, num2) <> 100) do
 		begin
 		num1 := num1 + 1;
-		num2 := num2 + 1
+		num2 := num2 + 1;
+		aResult[50] := num1 + num2
 		end
 end.

@@ -22,6 +22,7 @@ struct {
 } typedef tpToken;
 
 extern tpToken SymbolTable[Tsize];
+extern char scope[50];
 
 int lookup(char *s);
 int insert(tpToken token);

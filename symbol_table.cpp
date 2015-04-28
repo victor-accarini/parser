@@ -7,7 +7,8 @@ int lookup(char *s)
 	int i;
 	for (i=0; i < Tsize-1; i++)
 	{
-		if (strcmp(s,SymbolTable[i].token_name) == 0)
+		if (strcmp(s,SymbolTable[i].token_name) == 0 && (strcmp(SymbolTable[i].scope,"global") == 0 || strcmp(SymbolTable[i].scope,scope) == 0
+					|| strcmp(SymbolTable[i].token_type,"reserved") == 0) )
 			return i;
 	}
 	return -1;
@@ -100,8 +101,8 @@ void init()
 	}
 
 	// Initialize the reserved words
-	insertAt(proc_id,"read","built-in function", 0);
-	insertAt(proc_id,"write","built-in function", 0);
+	insertAt(proc_id,"read","reserved", 0);
+	insertAt(proc_id,"write","reserved", 0);
 	strcpy(SymbolTable[0].funcargs,"int int");
 	strcpy(SymbolTable[1].funcargs,"int");
 	insertAt(keywd_program, "program", "reserved", 0);

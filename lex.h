@@ -6,6 +6,7 @@
 #include <string.h>
 #include "symbol_table.h"
 
+extern int linecounter;
 extern char *line;
 extern char *lineptr;
 extern char ch;

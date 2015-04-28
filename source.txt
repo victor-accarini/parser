@@ -2,27 +2,30 @@ program calculator(input, output);
 
 var num1, num2: integer;
 var num3: real;
-var result: integer;
+var result: real;
 var aResult: array[10..70] of integer;
 
-function sum (num1: integer; num2: integer):integer;
+function sum (num1: real; num2: integer):real;
 	begin
 	result := num1 + num2
 	end;
 
-function subtraction (num1: real; num2: integer): integer;
+function subtraction (num4: real; num5: integer): integer;
 	begin
-	result := num1 - num2
+	result := num1 - num2;
+	result := num4 - num5;
+	subtraction := result
 	end;
 
-function multiplication (num1: integer; num2: integer): integer;
+function multiplication (num4: integer; num7: integer): integer;
 	begin
-	result := num1 * num2
+	result := num1 * num2;
+	result := num4 * num7
 	end;
 
 procedure procId;
 	begin
-		
+		result := num7
 	end;
 
 begin

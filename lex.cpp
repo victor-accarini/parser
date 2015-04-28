@@ -275,4 +275,5 @@ void getaLine()
 {
 	fgets(line, 250, sourcefile);
 	lineptr = line;
+	linecounter++;
 }

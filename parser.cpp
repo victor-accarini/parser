@@ -13,6 +13,8 @@ char arglisttype[500];
 char paramType[10], paramSType[50];
 int funcargid = -1, funccheckid = -1;
 char scope[50];
+int linecounter = 1;
+
 void clearIdL_list()
 {
 	for (int i = 0; i < 20; i++)
@@ -137,7 +139,9 @@ void Stype()
 	{
 		for(i = 0; i < varCounter; i++)
 		{
-			changeType(idL_list[i],"integer");
+			// If variable do not have a type, change type
+			if (strcmp(SymbolTable[idL_list[i]].token_type, "") == 0) 
+				changeType(idL_list[i],"integer");
 		}
 		if (varfuncCounter == 1)
 		{
@@ -150,7 +154,8 @@ void Stype()
 	{
 		for(i = 0; i < varCounter; i++)
 		{
-			changeType(idL_list[i],"real");
+			if (strcmp(SymbolTable[idL_list[i]].token_type, "") == 0) 
+				changeType(idL_list[i],"real");
 		}
 		if (varfuncCounter == 1)
 		{
@@ -163,7 +168,8 @@ void Stype()
 	{
 		for(i = 0; i < varCounter; i++)
 		{
-			changeType(idL_list[i],"boolean");
+			if (strcmp(SymbolTable[idL_list[i]].token_type, "") == 0) 
+				changeType(idL_list[i],"boolean");
 		}
 		if (varfuncCounter == 1)
 		{
@@ -212,8 +218,14 @@ void subhead()
 			// Change CT
 			CTok.token = func_id;
 		}
+		else if (CTok.token == func_id)
+		{
+			fprintf(trace, "%d: Error: Function already declared.",linecounter);
+			fprintf(errorfile, "%d: Error: Function already declared.",linecounter);
+			report();
+			exit(1);
+		}
 		strcpy(scope,CTok.token_name);
-		varfuncCounter = 1;
 		varfuncNumber = n;
 		aux = n;
 		funcargid = n;
@@ -222,6 +234,7 @@ void subhead()
 		// Assign the arguments to the function
 		strcpy(SymbolTable[aux].funcargs, arglisttype);
 		MATCH(colon);
+		varfuncCounter = 1;
 		Stype();
 		varfuncNumber = 0;
 		MATCH(semi_colon);
@@ -235,6 +248,13 @@ void subhead()
 			changeToken(n,proc_id);
 			// Change CT
 			CTok.token = proc_id;
+		}
+		else if (CTok.token == proc_id)
+		{
+			fprintf(trace, "%d: Error: Procedure already declared.",linecounter);
+			fprintf(errorfile, "%d: Error: Procedure already declared.",linecounter);
+			report();
+			exit(1);
 		}
 		aux = n;
 		funcargid = n;
@@ -276,7 +296,8 @@ void paramL()
 	{
 		if (strcmp(SymbolTable[idL_list[k]].scope,"") != 0 && strcmp(SymbolTable[idL_list[k]].scope,scope) != 0)
 		{
-			fprintf(trace, "Warning: Variable %s conflict. Variable already exist in %s scope.\n",SymbolTable[idL_list[k]].token_name, SymbolTable[idL_list[k]].scope);
+			fprintf(trace, "%d: Warning: Variable %s conflict. Variable already exist in %s scope.\n",linecounter,SymbolTable[idL_list[k]].token_name, SymbolTable[idL_list[k]].scope);
+			fprintf(errorfile, "%d: Warning: Variable %s conflict. Variable already exist in %s scope.\n",linecounter,SymbolTable[idL_list[k]].token_name, SymbolTable[idL_list[k]].scope);
 		}
 	}
 	MATCH(colon);
@@ -303,11 +324,13 @@ void paramL()
 	strcpy(paramType,"");
 	while (CTok.token == semi_colon)
 	{
+		clearIdL_list();
 		MATCH(semi_colon);
 		idL();
 		//Get the number of parameters
 		idlaux = idLCounter;		
 		MATCH(colon);
+		varCounter = idLCounter;
 		type();
 		strcat(paramSType, " ");
 		if (strcmp(paramType,"") == 0)
@@ -425,10 +448,19 @@ void V()
 	{
 		MATCH(func_id);
 	}
+
 	if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
 	{
-		fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
-		fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+		fprintf(trace,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+		fprintf(errorfile,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+		report();
+		exit(1);
+	}
+	else if (strcmp(SymbolTable[auxvar].scope,"global") != 0 && strcmp(SymbolTable[auxvar].scope,scope) != 0)
+	{
+		fprintf(trace,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+		fprintf(errorfile,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+		report();
 		exit(1);
 	}
 	EXIT("V");
@@ -464,8 +496,8 @@ void EL()
 	strcpy(auxstr,SymbolTable[funccheckid].funcargs);
 	if (strcmp(auxstr,"") == 0)
 	{
-		fprintf(trace, "Error: function or procedure call without arguments.");
-		fprintf(errorfile, "Error: function or procedure call without arguments.");
+		fprintf(trace, "%d: Error: function or procedure call without arguments.", linecounter);
+		fprintf(errorfile, "%d: Error: function or procedure call without arguments.", linecounter);
 	}
 	pch = strtok(auxstr," ");
 	if (pch[0] == 'i')
@@ -486,8 +518,9 @@ void EL()
 		pch = strtok(NULL," ");
 		if (pch == NULL)
 		{
-			printf("Error: check log file.");
-			fprintf(errorfile, "Error: Too many or too few arguments.");
+			printf("%d: Error: check log file.", linecounter);
+			fprintf(errorfile, "%d: Error: Too many or too few arguments.", linecounter);
+			report();
 			exit(1);
 		}
 		if (pch[0] == 'i')
@@ -603,13 +636,22 @@ void F()
 	{
 		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
 		{
-			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+			fprintf(trace, "%d: Warning: Expected variable of type %s\n",linecounter,idtype); 
+			fprintf(errorfile, "%d: Warning: Expected variable of type %s\n",linecounter,idtype); 
 		}
 		MATCH(id);
 		if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
 		{
-			fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
-			fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			fprintf(trace,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+			report();
+			exit(1);
+		}
+		else if (strcmp(SymbolTable[auxvar].scope,"global") != 0 && strcmp(SymbolTable[auxvar].scope,scope) != 0)
+		{
+			fprintf(trace,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+			report();
 			exit(1);
 		}
 	}
@@ -618,7 +660,8 @@ void F()
 		funccheckid = n;
 		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
 		{
-			fprintf(trace, "Warning: Wrong function type, expected function of type %s\n",idtype); 
+			fprintf(trace, "%d: Warning: Wrong function type, expected function of type %s\n",linecounter,idtype); 
+			fprintf(errorfile, "%d: Warning: Wrong function type, expected function of type %s\n",linecounter,idtype); 
 		}
 		MATCH(func_id);
 		MATCH(l_paren);
@@ -626,8 +669,16 @@ void F()
 		MATCH(r_paren);
 		if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
 		{
-			fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
-			fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			fprintf(trace,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+			report();
+			exit(1);
+		}
+		else if (strcmp(SymbolTable[auxvar].scope,"global") != 0 && strcmp(SymbolTable[auxvar].scope,scope) != 0)
+		{
+			fprintf(trace,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+			report();
 			exit(1);
 		}
 	}
@@ -635,7 +686,8 @@ void F()
 	{
 		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
 		{
-			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+			fprintf(trace, "%d: Warning: Expected variable of type %s\n",linecounter,idtype); 
+			fprintf(errorfile, "%d: Warning: Expected variable of type %s\n",linecounter,idtype); 
 		}
 		MATCH(num);
 	}
@@ -654,12 +706,14 @@ void F()
 	{
 		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
 		{
-			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+			fprintf(trace, "%d: Warning: Expected variable of type %s\n",linecounter,idtype); 
+			fprintf(errorfile, "%d: Warning: Expected variable of type %s\n",linecounter,idtype); 
 		}
 		if (CTok.token == proc_id)
 		{
-			fprintf(trace, "Error: A procedure does not return a value.");
-			fprintf(errorfile, "Error: A procedure does not return a value.");
+			fprintf(trace, "%d: Error: A procedure does not return a value.", linecounter);
+			fprintf(errorfile, "%d: Error: A procedure does not return a value.", linecounter);
+			report();
 			exit(1);
 		}
 		MATCH(array_id);
@@ -668,8 +722,16 @@ void F()
 		MATCH(right_bkt);
 		if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
 		{
-			fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
-			fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			fprintf(trace,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"%d: Error: Variable or function %s not declared.",linecounter,SymbolTable[auxvar].token_name);
+			report();
+			exit(1);
+		}
+		else if (strcmp(SymbolTable[auxvar].scope,"global") != 0 && strcmp(SymbolTable[auxvar].scope,scope) != 0)
+		{
+			fprintf(trace,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"%d: Error: Variable or function %s out of scope.",linecounter,SymbolTable[auxvar].token_name);
+			report();
 			exit(1);
 		}
 	}
@@ -691,9 +753,10 @@ void MATCH(enum tpType tok)
 	{
 		ToAscii(tok, expected, -1);
 		ToAscii(SymbolTable[n].token, received, n);
-		fprintf(trace,"Error: Expected token %s, received %s\n",expected,received);
-		fprintf(errorfile,"Error: Expected token %s, received %s\n",expected,received);
-		exit(-1);
+		fprintf(trace,"%d: Error: Expected token %s, received %s\n",linecounter,expected,received);
+		fprintf(errorfile,"%d: Error: Expected token %s, received %s\n",linecounter,expected,received);
+		report();
+		exit(1);
 	}
 }
 

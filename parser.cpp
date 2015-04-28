@@ -2,6 +2,7 @@
 
 FILE *trace = NULL;
 FILE *tracelex = NULL;
+FILE *errorfile = NULL;
 tpToken CTok;
 int tabcounter, n;
 int idL_list[20];
@@ -9,7 +10,9 @@ int idLCounter = 0, varCounter = 0;
 int varfuncCounter = 0, varfuncNumber;
 char idtype[10];
 char arglisttype[500];
-
+char paramType[10], paramSType[50];
+int funcargid = -1, funccheckid = -1;
+char scope[50];
 void clearIdL_list()
 {
 	for (int i = 0; i < 20; i++)
@@ -30,20 +33,26 @@ void parser()
 		printf("Error: Parser trace log file missing.");
 	}
 	tracelex = fopen("tracelex.log","w+");
-	if (trace == NULL){
+	if (tracelex == NULL){
 		printf("Error: Lex trace log file missing.");
+	}
+	errorfile = fopen("error.log","w+");
+	if (errorfile == NULL){
+		printf("Error: Error log file missing.");
 	}
 
 	clearIdL_list();
 
 	fprintf(trace,"Starting the parser.\n");
+	strcpy(scope,"global");
 	n = getToken(&CTok);
 	while(CTok.token != MyEOF)
-	{
+	{		
 		P();
 	}
 	
 	fprintf(trace,"Closing the parser.\n");
+	fclose(errorfile);
 	fclose(trace);
 	fclose(tracelex);
 }
@@ -59,6 +68,7 @@ void P()
 	MATCH(semi_colon);
 	decls();
 	subdecls();
+	strcpy(scope,"main");
 	cmpdS();
 	EXIT("P");
 }
@@ -98,6 +108,7 @@ void type()
 	ENTER("type");
 	if (CTok.token == keywd_array)
 	{
+		strcpy(paramType,"array");
 		if (idLCounter > 0)
 		{
 			for (; idLCounter > 0;)
@@ -133,6 +144,7 @@ void Stype()
 			changeType(varfuncNumber,"integer");
 		}
 		MATCH(keywd_int);
+		strcpy(paramSType,"int");
 	}
 	else if (CTok.token == keywd_real)
 	{
@@ -145,6 +157,7 @@ void Stype()
 			changeType(varfuncNumber,"real");
 		}
 		MATCH(keywd_real);
+		strcpy(paramSType,"real");
 	}
 	else
 	{
@@ -157,8 +170,10 @@ void Stype()
 			changeType(varfuncNumber,"boolean");
 		}
 		MATCH(keywd_bool);
+		strcpy(paramSType,"bool");
 	}
 	varCounter = 0;
+	varfuncCounter = 0;
 	EXIT("Stype");
 }
 
@@ -179,6 +194,7 @@ void subdecl()
 	subhead();
 	decls();
 	cmpdS();
+	strcpy(scope,"global");
 	EXIT("subdecl");
 }
 
@@ -196,9 +212,11 @@ void subhead()
 			// Change CT
 			CTok.token = func_id;
 		}
+		strcpy(scope,CTok.token_name);
 		varfuncCounter = 1;
 		varfuncNumber = n;
 		aux = n;
+		funcargid = n;
 		MATCH(func_id);
 		args();
 		// Assign the arguments to the function
@@ -219,6 +237,8 @@ void subhead()
 			CTok.token = proc_id;
 		}
 		aux = n;
+		funcargid = n;
+		strcpy(scope,CTok.token_name);
 		MATCH(proc_id);
 		args();
 		// Assign the arguments to the function
@@ -244,17 +264,76 @@ void args()
 
 void paramL()
 {	
+	int idlaux = 0;
+	char aux[60];
 	ENTER("paramL");
+	clearIdL_list();	
+	strcpy(paramSType,"");
+	strcpy(paramType,"");
 	idL();
+	idlaux = idLCounter;
+	for(int k = 0; k < idlaux; k++)
+	{
+		if (strcmp(SymbolTable[idL_list[k]].scope,"") != 0 && strcmp(SymbolTable[idL_list[k]].scope,scope) != 0)
+		{
+			fprintf(trace, "Warning: Variable %s conflict. Variable already exist in %s scope.\n",SymbolTable[idL_list[k]].token_name, SymbolTable[idL_list[k]].scope);
+		}
+	}
 	MATCH(colon);
+	varCounter = idLCounter;
 	type();
+	strcat(paramSType, " ");
+	if (strcmp(paramType,"") == 0)
+	{
+		for (int i = 0; i < idlaux; i++)
+		{
+			strcat(arglisttype,paramSType);
+		}
+	}
+	else
+	{
+		strcpy(aux,"a");
+		strcat(aux, paramSType);
+		strcpy(paramSType, aux);
+		for (int i = 0; i < idlaux; i++)
+		{
+			strcat(arglisttype,paramSType);
+		}
+	}
+	strcpy(paramType,"");
 	while (CTok.token == semi_colon)
 	{
 		MATCH(semi_colon);
 		idL();
+		//Get the number of parameters
+		idlaux = idLCounter;		
 		MATCH(colon);
 		type();
+		strcat(paramSType, " ");
+		if (strcmp(paramType,"") == 0)
+		{
+			for (int i = 0; i < idlaux; i++)
+			{
+				strcat(arglisttype,paramSType);
+			}
+		}
+		else
+		{
+			strcpy(aux,"a");
+			strcat(aux, paramSType);
+			strcpy(paramSType, aux);
+			for (int i = 0; i < idlaux; i++)
+			{
+				strcat(arglisttype,paramSType);
+			}
+		}
+		strcpy(paramType,"");
+
 	}
+	//Clear parameters
+	idlaux = 0;
+	strcpy(paramType,"");
+	strcpy(paramSType,"");
 	EXIT("paramL");
 }
 
@@ -329,6 +408,7 @@ void S()
 
 void V()
 {
+	int auxvar = n;
 	ENTER("V");
 	if (CTok.token == id)
 	{
@@ -345,6 +425,12 @@ void V()
 	{
 		MATCH(func_id);
 	}
+	if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
+	{
+		fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+		fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+		exit(1);
+	}
 	EXIT("V");
 }
 
@@ -358,6 +444,7 @@ void procS()
 		// Change CT
 		CTok.token = proc_id;
 	}
+	funccheckid = n;
 	MATCH(proc_id);
 	if (CTok.token == l_paren)
 	{
@@ -370,10 +457,51 @@ void procS()
 
 void EL()
 {
+	char auxstr[500];
+	char *pch;
 	ENTER("EL");
+	//Put the string in an auxiliar place to use strtok functions
+	strcpy(auxstr,SymbolTable[funccheckid].funcargs);
+	if (strcmp(auxstr,"") == 0)
+	{
+		fprintf(trace, "Error: function or procedure call without arguments.");
+		fprintf(errorfile, "Error: function or procedure call without arguments.");
+	}
+	pch = strtok(auxstr," ");
+	if (pch[0] == 'i')
+	{
+		strcpy(idtype,"integer");
+	}
+	else if (pch[0] == 'r')
+	{
+		strcpy(idtype,"real");
+	}
+	else if (pch[0] == 'b')
+	{
+		strcpy(idtype,"boolean");
+	}
 	E();
 	while (CTok.token == comma)
 	{	
+		pch = strtok(NULL," ");
+		if (pch == NULL)
+		{
+			printf("Error: check log file.");
+			fprintf(errorfile, "Error: Too many or too few arguments.");
+			exit(1);
+		}
+		if (pch[0] == 'i')
+		{
+			strcpy(idtype,"integer");
+		}
+		else if (pch[0] == 'r')
+		{
+			strcpy(idtype,"real");
+		}
+		else if (pch[0] == 'b')
+		{
+			strcpy(idtype,"boolean");
+		}
 		MATCH(comma);
 		E();
 	}
@@ -469,6 +597,7 @@ void T()
 
 void F()
 {
+	int auxvar = n;
 	ENTER("F");
 	if (CTok.token == id)
 	{
@@ -477,17 +606,30 @@ void F()
 			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
 		}
 		MATCH(id);
+		if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
+		{
+			fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			exit(1);
+		}
 	}
 	else if (CTok.token == func_id)
 	{
+		funccheckid = n;
 		if (strcmp(idtype,SymbolTable[n].token_type) != 0)
 		{
-			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
+			fprintf(trace, "Warning: Wrong function type, expected function of type %s\n",idtype); 
 		}
 		MATCH(func_id);
 		MATCH(l_paren);
 		EL();
 		MATCH(r_paren);
+		if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
+		{
+			fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			exit(1);
+		}
 	}
 	else if (CTok.token == num)
 	{
@@ -514,10 +656,22 @@ void F()
 		{
 			fprintf(trace, "Warning: Expected variable of type %s\n",idtype); 
 		}
+		if (CTok.token == proc_id)
+		{
+			fprintf(trace, "Error: A procedure does not return a value.");
+			fprintf(errorfile, "Error: A procedure does not return a value.");
+			exit(1);
+		}
 		MATCH(array_id);
 		MATCH(left_bkt);
 		SE();
 		MATCH(right_bkt);
+		if (strcmp(SymbolTable[auxvar].token_type,"") == 0)
+		{
+			fprintf(trace,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			fprintf(errorfile,"Error: Variable or function %s not declared.",SymbolTable[auxvar].token_name);
+			exit(1);
+		}
 	}
 	EXIT("F");
 }
@@ -538,6 +692,7 @@ void MATCH(enum tpType tok)
 		ToAscii(tok, expected, -1);
 		ToAscii(SymbolTable[n].token, received, n);
 		fprintf(trace,"Error: Expected token %s, received %s\n",expected,received);
+		fprintf(errorfile,"Error: Expected token %s, received %s\n",expected,received);
 		exit(-1);
 	}
 }

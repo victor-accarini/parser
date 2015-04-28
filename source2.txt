@@ -14,6 +14,7 @@ function subtraction (num1: integer; num2: integer): integer;
 	end;
 
 function multiplication (num1: integer; num2: integer): integer;
+	var aux: boolean;
 	begin
 	result := num1 * num2
 	end;

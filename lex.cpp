@@ -146,16 +146,10 @@ int getToken(tpToken *token)
 	}
 	else if (ch == '=')
 	{
+		CT = relop_eq;
 		name[bptr++] = ch;
 		name[bptr] = '\0';
 		ch = getaChar();
-		if (ch == '=')
-		{
-			CT = relop_eq;
-			name[bptr++] = ch;
-			name[bptr] = '\0';
-			ch = getaChar();
-		}
 	}
 	else if (ch == '>')
 	{
@@ -216,6 +210,7 @@ int getToken(tpToken *token)
 		{
 			fprintf(tracelex,"Token %s inserted in SymbolTable.\n", token->token_name);
 			n = insert(*token);
+			strcpy(SymbolTable[n].scope,scope);
 		}
 		else
 		{

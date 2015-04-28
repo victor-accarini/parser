@@ -1,0 +1,19 @@
+program test3( input,output);
+
+var first:   integer;
+var second:  integer;
+var third:   integer;
+
+procedure addemup(a,b:integer);
+var c:  integer;
+
+begin
+  c     := a + b;
+  third := c
+end;
+
+begin
+ read(first,second);
+ addemup(first,second);
+ write(third)
+end.

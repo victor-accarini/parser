@@ -61,13 +61,14 @@ void report()
 		printf("Error: could not dump the Symbol Table.");
 	}
 
-	fprintf(report," %30stoken %31sname %31stype %5svalue\n","","","","");
-	fprintf(report,"-----------------------------------------------------------------------------------------------------------------------\n");
+	fprintf(report," %30stoken %31sname %31stype %5svalue %10sscope\n","","","","","");
+	fprintf(report,"---------------------------------------------------------------------------------------------------------------------------------------\n");
 	char str[50];
 	while (SymbolTable[i].token != INVALID)
 	{
 		ToAscii(SymbolTable[i].token,str,i);
-		fprintf(report," %35s %35s %35s %10d\n", str, SymbolTable[i].token_name,SymbolTable[i].token_type,SymbolTable[i].token_value);
+		fprintf(report," %35s %35s %35s %10d %15s\n", str, SymbolTable[i].token_name,SymbolTable[i].token_type,SymbolTable[i].token_value,
+				SymbolTable[i].scope);
 		i++;
 	}
 	return;
@@ -99,6 +100,10 @@ void init()
 	}
 
 	// Initialize the reserved words
+	insertAt(proc_id,"read","built-in function", 0);
+	insertAt(proc_id,"write","built-in function", 0);
+	strcpy(SymbolTable[0].funcargs,"int int");
+	strcpy(SymbolTable[1].funcargs,"int");
 	insertAt(keywd_program, "program", "reserved", 0);
 	insertAt(keywd_var, "var", "reserved", 0);
 	insertAt(keywd_of, "of", "reserved", 0);

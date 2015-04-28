@@ -9,10 +9,11 @@
 extern char *line;
 extern char *lineptr;
 extern char ch;
-
+extern char scope[50];
 extern FILE *sourcefile;
 extern FILE *trace;
 extern FILE *tracelex;
+extern FILE *errorfile;
 
 /* --------------------------------------------- */
 /*             EXTERNAL FUNCTIONS                */

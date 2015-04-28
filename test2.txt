@@ -1,0 +1,14 @@
+program test2(input,output);
+
+ var a1,b1: integer;
+ var buffer: array [1..10] of integer;
+begin
+ read(buffer);
+a1 := 1;
+while buffer[a1] <> 0 do
+ begin
+   b1 := b1 + buffer;
+   a1 := a1 + 1
+ end;
+write(b1)
+end.

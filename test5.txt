@@ -1,0 +1,35 @@
+program test5(input, output);
+
+  var a: array[1..10] of integer;
+
+  procedure readarray;
+     var i : integer;
+     begin
+      while i < 10 do read(a[i])
+     end;
+
+  procedure partition(y,z : integer);
+
+     var i,j,x,v : integer;
+     begin
+
+     end;
+  procedure quicksort(m,n: integer);
+
+     var i : integer;
+     begin
+      if (n > m) then
+          begin
+               i := partition(m,n);
+               quicksort(m,i‑1);
+               quicksort(i+1,n)
+          end
+      else
+          begin end
+     end;
+begin
+  a[0] := 0;
+  a[10]:= 9999;
+  readarray;
+  quicksort(1,9)
+end.

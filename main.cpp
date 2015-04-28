@@ -6,15 +6,21 @@ FILE *sourcefile;
 char *line,*lineptr, ch;
 tpToken SymbolTable[Tsize];
 
-int main()
+int main(int argc, char *argv[])
 {
 	// Initialize the symbol table
 	init();
 	sourcefile = NULL;
 	line = (char *)malloc(270*sizeof(char));
 	
+	if (argc != 2)
+	{
+		printf("Error: Incorrect use of program.\n");
+		printf("Usage: ./parser <sourcefile>.\n");
+		exit(1);
+	}
 	// Open source file
-	sourcefile = fopen("source.txt","r");
+	sourcefile = fopen(argv[1],"r");
 
 	if (sourcefile == NULL)
 	{

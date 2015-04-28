@@ -1,0 +1,15 @@
+program test4(input,output);
+var x1,x2  : integer;
+var flags  : array [1..10] of real;
+var i,j    : integer;
+var baddata: boolean;
+begin
+ x2    := flags[0];
+ while  i <> 10 do
+  begin
+    x1 := x2 + flags[i] + baddata;
+    i  := i + 1
+  end;
+  x3 := i * x1
+ end.
+

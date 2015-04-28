@@ -1,7 +1,8 @@
 program calculator(input, output);
 
 var num1, num2: integer;
-var result: real;
+var num3: real;
+var result: integer;
 var aResult: array[10..70] of integer;
 
 function sum (num1: integer; num2: integer):integer;
@@ -9,7 +10,7 @@ function sum (num1: integer; num2: integer):integer;
 	result := num1 + num2
 	end;
 
-function subtraction (num1: integer; num2: integer): integer;
+function subtraction (num1: real; num2: integer): integer;
 	begin
 	result := num1 - num2
 	end;
@@ -35,7 +36,7 @@ begin
 		begin
 		num1 := 3;
 		num2 := 4;
-		result := multiplication(num1, num2)
+		result := multiplication(num1, num3)
 		end;
 	while (multiplication(num1, num2) <> 100) do
 		begin

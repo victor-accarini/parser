@@ -1,0 +1,13 @@
+program calculator(input, output);
+
+var num1, num2: integer;
+var result: real;
+
+function multiplication (fnum: integer; snum: integer): integer;
+	var aux: boolean;
+	begin
+	multiplication := fnum * snum
+	end;
+begin
+	result := multiplication (num1, num2)
+end.

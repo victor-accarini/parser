@@ -4,19 +4,22 @@ var num1, num2: integer;
 var result: real;
 
 function sum (num4: integer; num5: integer):integer;
+	var num7: integer
 	begin
-	result := num7 + num2
+	num7 := num4;
+	sum := num7 + num5
 	end;
 
 function subtraction (num1: integer; num2: integer): integer;
 	begin
-	result := num1 - num2
+	subtraction := num1 - num2
 	end;
 
-function multiplication (num1: integer; num2: integer): integer;
+function multiplication (num4: integer; num5: integer): integer;
 	begin
-	result := num1 * num2
+	multiplication := num4 * num5
 	end;
+
 begin
 	num1 := 2;
 	num2 := 10;
